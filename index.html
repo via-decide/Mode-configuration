@@ -1,0 +1,1434 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>StudyOS — Backend / System Design</title>
+  <style>
+    :root{
+      --bg:#0b0f17;
+      --panel:#0f1624;
+      --panel2:#0c1320;
+      --text:#e7eefc;
+      --muted:#9fb0d0;
+      --line:rgba(255,255,255,.08);
+      --accent:#7c5cff;
+      --accent2:#22c55e;
+      --danger:#ff4d6d;
+      --warn:#fbbf24;
+      --shadow: 0 16px 48px rgba(0,0,0,.45);
+      --radius:18px;
+      --radius2:14px;
+      --w: min(980px, calc(100vw - 24px));
+      --cardW: min(980px, calc(100vw - 24px));
+    }
+
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, "Noto Sans", "Liberation Sans", sans-serif;
+      background:
+        radial-gradient(1200px 800px at 20% -20%, rgba(124,92,255,.35), transparent 55%),
+        radial-gradient(900px 600px at 110% 10%, rgba(34,197,94,.25), transparent 55%),
+        radial-gradient(900px 700px at 30% 120%, rgba(251,191,36,.12), transparent 55%),
+        var(--bg);
+      color:var(--text);
+      overflow-x:hidden;
+    }
+
+    a{color:inherit}
+    .wrap{
+      width:var(--w);
+      margin:18px auto 48px;
+    }
+
+    header{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:16px;
+      margin-bottom:12px;
+    }
+
+    .brand{
+      display:flex;
+      flex-direction:column;
+      gap:6px;
+    }
+    .brand h1{
+      margin:0;
+      font-size:22px;
+      letter-spacing:.2px;
+      font-weight:760;
+      line-height:1.1;
+    }
+    .brand .sub{
+      margin:0;
+      color:var(--muted);
+      font-size:13px;
+      line-height:1.3;
+    }
+
+    .topActions{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      flex-wrap:wrap;
+      justify-content:flex-end;
+    }
+
+    .pillRow{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      justify-content:flex-end;
+    }
+
+    .pill{
+      border:1px solid var(--line);
+      background:rgba(255,255,255,.03);
+      color:var(--text);
+      padding:9px 12px;
+      border-radius:999px;
+      display:flex;
+      gap:8px;
+      align-items:center;
+      font-size:13px;
+      cursor:pointer;
+      user-select:none;
+      transition:transform .08s ease, background .2s ease, border-color .2s ease;
+    }
+    .pill:hover{background:rgba(255,255,255,.06)}
+    .pill:active{transform:scale(.98)}
+    .pill strong{font-weight:740}
+    .pill .dot{
+      width:8px;height:8px;border-radius:50%;
+      background:rgba(255,255,255,.25);
+    }
+    .pill.primary{border-color:rgba(124,92,255,.55)}
+    .pill.primary .dot{background:rgba(124,92,255,.9)}
+    .pill.good{border-color:rgba(34,197,94,.55)}
+    .pill.good .dot{background:rgba(34,197,94,.9)}
+    .pill.warn{border-color:rgba(251,191,36,.55)}
+    .pill.warn .dot{background:rgba(251,191,36,.9)}
+    .pill.danger{border-color:rgba(255,77,109,.55)}
+    .pill.danger .dot{background:rgba(255,77,109,.9)}
+
+    .metaBar{
+      display:flex;
+      gap:10px;
+      align-items:center;
+      flex-wrap:wrap;
+      margin:10px 0 14px;
+    }
+    .tag{
+      border:1px solid var(--line);
+      background:rgba(255,255,255,.03);
+      padding:7px 10px;
+      border-radius:999px;
+      font-size:12px;
+      color:var(--muted);
+      display:flex;
+      gap:8px;
+      align-items:center;
+    }
+    .tag b{color:var(--text); font-weight:720}
+
+    .panel{
+      background:linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.02));
+      border:1px solid var(--line);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+      overflow:hidden;
+    }
+
+    .nav{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      padding:12px 14px;
+      border-bottom:1px solid var(--line);
+      background:rgba(0,0,0,.15);
+    }
+
+    .dateBlock{
+      display:flex;
+      flex-direction:column;
+      gap:4px;
+      min-width:220px;
+    }
+    .dateTop{
+      display:flex;
+      gap:10px;
+      align-items:center;
+      flex-wrap:wrap;
+    }
+    .dateTop .big{
+      font-weight:820;
+      letter-spacing:.2px;
+      font-size:14px;
+    }
+    .dateTop .small{
+      color:var(--muted);
+      font-size:12px;
+    }
+
+    .seg{
+      display:flex;
+      gap:8px;
+      align-items:center;
+      flex-wrap:wrap;
+      justify-content:flex-end;
+    }
+    .btn{
+      border:1px solid var(--line);
+      background:rgba(255,255,255,.03);
+      color:var(--text);
+      padding:9px 12px;
+      border-radius:12px;
+      cursor:pointer;
+      font-size:13px;
+      transition:background .2s ease, transform .08s ease, border-color .2s ease;
+      user-select:none;
+      display:inline-flex;
+      gap:8px;
+      align-items:center;
+    }
+    .btn:hover{background:rgba(255,255,255,.06)}
+    .btn:active{transform:scale(.98)}
+    .btn.primary{
+      border-color:rgba(124,92,255,.65);
+      background:rgba(124,92,255,.12);
+    }
+    .btn.ghost{background:transparent}
+    .btn.danger{
+      border-color:rgba(255,77,109,.55);
+      background:rgba(255,77,109,.10);
+    }
+
+    /* Swiper */
+    .swiper{
+      position:relative;
+    }
+    .track{
+      display:flex;
+      width:100%;
+      will-change:transform;
+      transition:transform .22s ease;
+      touch-action:pan-y;
+    }
+    .slide{
+      width:var(--cardW);
+      padding:16px;
+      border-right:1px solid transparent;
+      flex:0 0 var(--cardW);
+    }
+
+    .slideHeader{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:10px;
+      margin-bottom:10px;
+    }
+    .slideHeader h2{
+      margin:0;
+      font-size:14px;
+      letter-spacing:.25px;
+      font-weight:860;
+      text-transform:uppercase;
+      color:rgba(231,238,252,.92);
+    }
+    .slideHeader p{
+      margin:4px 0 0;
+      color:var(--muted);
+      font-size:13px;
+      line-height:1.35;
+    }
+
+    .card{
+      border:1px solid var(--line);
+      background:rgba(0,0,0,.18);
+      border-radius:var(--radius2);
+      padding:14px;
+    }
+
+    .grid{
+      display:grid;
+      gap:12px;
+      grid-template-columns:1fr;
+    }
+    @media (min-width: 860px){
+      .grid.two{grid-template-columns:1fr 1fr}
+    }
+
+    label{
+      display:block;
+      font-size:12px;
+      color:var(--muted);
+      margin-bottom:6px;
+    }
+
+    input[type="text"], input[type="number"], textarea, select{
+      width:100%;
+      border:1px solid rgba(255,255,255,.10);
+      background:rgba(255,255,255,.03);
+      color:var(--text);
+      border-radius:12px;
+      padding:10px 11px;
+      font-size:14px;
+      outline:none;
+      transition:border-color .2s ease, background .2s ease;
+    }
+    textarea{min-height:110px; resize:vertical}
+    input:focus, textarea:focus, select:focus{
+      border-color:rgba(124,92,255,.55);
+      background:rgba(255,255,255,.05);
+    }
+    select option{background:#101827}
+
+    .segmented{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+    }
+    .chip{
+      border:1px solid rgba(255,255,255,.10);
+      background:rgba(255,255,255,.03);
+      color:var(--text);
+      padding:9px 10px;
+      border-radius:999px;
+      font-size:13px;
+      cursor:pointer;
+      user-select:none;
+      transition:background .2s ease, border-color .2s ease, transform .08s ease;
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+    }
+    .chip:hover{background:rgba(255,255,255,.06)}
+    .chip:active{transform:scale(.98)}
+    .chip.active{
+      border-color:rgba(124,92,255,.65);
+      background:rgba(124,92,255,.14);
+    }
+    .chip.good.active{border-color:rgba(34,197,94,.75); background:rgba(34,197,94,.12)}
+    .chip.warn.active{border-color:rgba(251,191,36,.8); background:rgba(251,191,36,.12)}
+    .chip.danger.active{border-color:rgba(255,77,109,.8); background:rgba(255,77,109,.12)}
+
+    .hint{
+      color:var(--muted);
+      font-size:12px;
+      line-height:1.35;
+      margin-top:6px;
+    }
+
+    .footerNav{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      padding:12px 14px;
+      border-top:1px solid var(--line);
+      background:rgba(0,0,0,.15);
+    }
+
+    .dots{
+      display:flex;
+      gap:6px;
+      align-items:center;
+      justify-content:center;
+      flex:1;
+    }
+    .dot2{
+      width:7px;height:7px;border-radius:999px;
+      background:rgba(255,255,255,.22);
+      transition:transform .2s ease, background .2s ease, width .2s ease;
+    }
+    .dot2.active{
+      background:rgba(124,92,255,.95);
+      width:18px;
+    }
+    .stepText{
+      font-size:12px;
+      color:var(--muted);
+      min-width:64px;
+      text-align:right;
+    }
+
+    .mono{
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      font-size:13px;
+      line-height:1.45;
+      white-space:pre-wrap;
+      word-break:break-word;
+    }
+
+    /* Modal */
+    .modalBackdrop{
+      position:fixed;
+      inset:0;
+      background:rgba(0,0,0,.55);
+      display:none;
+      align-items:center;
+      justify-content:center;
+      padding:18px;
+      z-index:50;
+    }
+    .modalBackdrop.open{display:flex}
+    .modal{
+      width:min(720px, 100%);
+      background:linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
+      border:1px solid var(--line);
+      border-radius:22px;
+      box-shadow:var(--shadow);
+      overflow:hidden;
+    }
+    .modalHeader{
+      padding:14px 16px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      border-bottom:1px solid var(--line);
+      background:rgba(0,0,0,.18);
+    }
+    .modalHeader h3{
+      margin:0;
+      font-size:14px;
+      font-weight:860;
+      letter-spacing:.25px;
+      text-transform:uppercase;
+    }
+    .modalBody{
+      padding:16px;
+    }
+    .modalFooter{
+      padding:12px 16px;
+      border-top:1px solid var(--line);
+      display:flex;
+      justify-content:space-between;
+      gap:10px;
+      flex-wrap:wrap;
+      background:rgba(0,0,0,.12);
+    }
+
+    .toast{
+      position:fixed;
+      left:50%;
+      bottom:18px;
+      transform:translateX(-50%);
+      background:rgba(15,22,36,.92);
+      border:1px solid rgba(255,255,255,.10);
+      color:var(--text);
+      padding:10px 12px;
+      border-radius:999px;
+      box-shadow: 0 16px 36px rgba(0,0,0,.45);
+      font-size:13px;
+      display:none;
+      z-index:100;
+      max-width:min(520px, calc(100vw - 24px));
+      text-align:center;
+    }
+    .toast.show{display:block; animation:pop .18s ease}
+    @keyframes pop{from{opacity:0; transform:translateX(-50%) translateY(6px)} to{opacity:1; transform:translateX(-50%) translateY(0)}}
+
+    .kbd{
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size:11px;
+      color:rgba(231,238,252,.9);
+      border:1px solid rgba(255,255,255,.14);
+      background:rgba(255,255,255,.04);
+      padding:2px 6px;
+      border-radius:8px;
+    }
+
+    .smallRow{
+      display:flex;
+      gap:10px;
+      align-items:center;
+      flex-wrap:wrap;
+      justify-content:space-between;
+    }
+
+    .muted{color:var(--muted)}
+    .sep{height:1px; background:var(--line); margin:12px 0}
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+    <header>
+      <div class="brand">
+        <h1>StudyOS</h1>
+        <p class="sub">Swipe to log today’s progress • autosaves • copy/share report</p>
+      </div>
+
+      <div class="topActions">
+        <div class="pillRow">
+          <div class="pill primary" id="pillProfile" title="Edit profile (P)">
+            <span class="dot"></span>
+            <span><strong id="pillName">Student</strong></span>
+          </div>
+          <div class="pill" id="pillTarget" title="Target role">
+            <span class="dot"></span>
+            <span id="pillTargetText">Backend / System Design</span>
+          </div>
+          <div class="pill" id="pillTimeline" title="Timeline">
+            <span class="dot"></span>
+            <span id="pillTimelineText">3–6 Months</span>
+          </div>
+          <div class="pill" id="pillLevel" title="Current level">
+            <span class="dot"></span>
+            <span id="pillLevelText">Intermediate</span>
+          </div>
+          <div class="pill" id="pillDeepDive" title="Deep dive mode">
+            <span class="dot"></span>
+            <span id="pillDeepDiveText">Deep Dive: No</span>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <div class="metaBar" id="metaBar"></div>
+
+    <section class="panel">
+      <div class="nav">
+        <div class="dateBlock">
+          <div class="dateTop">
+            <div class="big" id="dateLabel">Today</div>
+            <div class="small" id="datePretty"></div>
+          </div>
+          <div class="small muted" id="autosaveLabel">Autosave: on</div>
+        </div>
+
+        <div class="seg">
+          <button class="btn" id="btnPrevDay" title="Previous day (←)">←</button>
+          <button class="btn primary" id="btnToday" title="Go to today (T)">TODAY</button>
+          <button class="btn" id="btnYday" title="Go to yesterday (Y)">YDAY</button>
+          <button class="btn" id="btnNextDay" title="Next day (→)">→</button>
+          <button class="btn ghost" id="btnSettings" title="Profile & data (P)">⚙️</button>
+        </div>
+      </div>
+
+      <div class="swiper" id="swiper">
+        <div class="track" id="track">
+          <!-- Slide 1 -->
+          <div class="slide">
+            <div class="slideHeader">
+              <div>
+                <h2>Daily setup</h2>
+                <p>Keep it simple. Swipe →. You can copy a clean report anytime.</p>
+              </div>
+              <div class="muted"><span class="kbd">1</span></div>
+            </div>
+
+            <div class="card">
+              <div class="grid two">
+                <div>
+                  <label for="focus">Focus of the day (1 line)</label>
+                  <input id="focus" type="text" placeholder="e.g., LLD: rate limiter + caching notes" />
+                </div>
+
+                <div>
+                  <label>Energy level (tap)</label>
+                  <div class="segmented" id="energySeg">
+                    <div class="chip danger" data-value="Low">LOW</div>
+                    <div class="chip warn" data-value="Med">MED</div>
+                    <div class="chip good" data-value="High">HIGH</div>
+                  </div>
+                  <div class="hint">Quick signal for pacing your day.</div>
+                </div>
+              </div>
+
+              <div style="margin-top:12px;">
+                <label for="distractions">Distractions (optional)</label>
+                <input id="distractions" type="text" placeholder="e.g., meetings, travel, low sleep" />
+              </div>
+            </div>
+          </div>
+
+          <!-- Slide 2 -->
+          <div class="slide">
+            <div class="slideHeader">
+              <div>
+                <h2>Study core</h2>
+                <p>Log actual output. Not plans.</p>
+              </div>
+              <div class="muted"><span class="kbd">2</span></div>
+            </div>
+
+            <div class="card">
+              <div class="grid two">
+                <div>
+                  <label for="hours">Hours studied (actual)</label>
+                  <select id="hours">
+                    <option value="">Select…</option>
+                    <option>0</option>
+                    <option>0.5</option>
+                    <option>1</option>
+                    <option>1.5</option>
+                    <option>2</option>
+                    <option>2.5</option>
+                    <option>3</option>
+                    <option>4</option>
+                    <option>5</option>
+                    <option>6+</option>
+                  </select>
+                  <div class="hint">If you did 30 mins, log 0.5.</div>
+                </div>
+
+                <div>
+                  <label for="keyLearning">One key learning (1 sentence)</label>
+                  <input id="keyLearning" type="text" placeholder="e.g., Why token bucket is better for bursty traffic" />
+                </div>
+              </div>
+
+              <div style="margin-top:12px;">
+                <label for="completed">What did you complete? (bullets ok)</label>
+                <textarea id="completed" placeholder="- Finished 2 HLD case studies&#10;- Read CAP theorem nuances&#10;- Implemented LRU cache"></textarea>
+                <div class="hint">Tip: Start lines with <span class="kbd">-</span> for bullets.</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Slide 3 -->
+          <div class="slide">
+            <div class="slideHeader">
+              <div>
+                <h2>Health + habits stability</h2>
+                <p>Small consistency beats big motivation.</p>
+              </div>
+              <div class="muted"><span class="kbd">3</span></div>
+            </div>
+
+            <div class="card">
+              <div class="grid two">
+                <div>
+                  <label for="workout">Workout / steps (optional)</label>
+                  <input id="workout" type="text" placeholder="e.g., 6k steps / 30m run" />
+                </div>
+
+                <div>
+                  <label for="sleep">Sleep (hours)</label>
+                  <select id="sleep">
+                    <option value="">Select…</option>
+                    <option>4</option>
+                    <option>5</option>
+                    <option>6</option>
+                    <option>7</option>
+                    <option>8</option>
+                    <option>9+</option>
+                  </select>
+                </div>
+              </div>
+
+              <div style="margin-top:12px;">
+                <label>Mood (tap)</label>
+                <div class="segmented" id="moodSeg">
+                  <div class="chip good" data-value="Good">GOOD</div>
+                  <div class="chip warn" data-value="OK">OK</div>
+                  <div class="chip danger" data-value="Low">LOW</div>
+                </div>
+                <div class="hint">Mood is data, not judgment.</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Slide 4 -->
+          <div class="slide">
+            <div class="slideHeader">
+              <div>
+                <h2>Wrap up copy / share</h2>
+                <p>Tap Copy to paste into WhatsApp/Notion. Tap Share to send directly.</p>
+              </div>
+              <div class="muted"><span class="kbd">4</span></div>
+            </div>
+
+            <div class="card">
+              <div class="grid two">
+                <div>
+                  <label for="tomorrow">Tomorrow’s priority (1 line)</label>
+                  <input id="tomorrow" type="text" placeholder="e.g., HLD: design URL shortener + notes" />
+                </div>
+
+                <div>
+                  <label for="blockers">Blockers (if any)</label>
+                  <input id="blockers" type="text" placeholder="e.g., waiting on mock interview slot" />
+                </div>
+              </div>
+
+              <div class="sep"></div>
+
+              <div class="smallRow">
+                <div class="muted">Generated text (auto)</div>
+                <div style="display:flex; gap:10px; flex-wrap:wrap; justify-content:flex-end;">
+                  <button class="btn" id="btnCopy">Copy</button>
+                  <button class="btn primary" id="btnShare">Share</button>
+                </div>
+              </div>
+
+              <div style="margin-top:10px;">
+                <div class="card" style="background:rgba(0,0,0,.22)">
+                  <div class="mono" id="reportText"></div>
+                </div>
+                <div class="hint">Reset clears only the current date. Your profile stays.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="footerNav">
+        <button class="btn" id="btnBack">← Back</button>
+        <div class="dots" id="dots"></div>
+        <div class="stepText" id="stepText">01/04</div>
+        <button class="btn primary" id="btnNext">Next →</button>
+      </div>
+    </section>
+  </div>
+
+  <!-- Settings / Profile modal -->
+  <div class="modalBackdrop" id="modalBackdrop" aria-hidden="true">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+      <div class="modalHeader">
+        <h3 id="modalTitle">Profile & Data</h3>
+        <button class="btn" id="btnCloseModal">✕</button>
+      </div>
+
+      <div class="modalBody">
+        <div class="grid two">
+          <div>
+            <label for="profileName">Student Name</label>
+            <input id="profileName" type="text" placeholder="Your name" />
+          </div>
+          <div>
+            <label for="profileTarget">Target Company / Role</label>
+            <input id="profileTarget" type="text" value="Backend / System Design" />
+          </div>
+          <div>
+            <label for="profileTimeline">Interview Timeline</label>
+            <input id="profileTimeline" type="text" value="3–6 Months" />
+          </div>
+          <div>
+            <label for="profileLevel">Current Level</label>
+            <select id="profileLevel">
+              <option>Beginner</option>
+              <option selected>Intermediate</option>
+              <option>Advanced</option>
+            </select>
+          </div>
+        </div>
+
+        <div style="margin-top:12px;">
+          <label>Deep Dive Mode?</label>
+          <div class="segmented" id="deepDiveSeg">
+            <div class="chip" data-value="No">No</div>
+            <div class="chip" data-value="Yes">Yes</div>
+          </div>
+          <div class="hint">If “Yes”, the report includes extra prompts for System Design depth.</div>
+        </div>
+
+        <div class="sep"></div>
+
+        <div class="smallRow">
+          <div>
+            <div style="font-weight:780;">Data utilities</div>
+            <div class="muted" style="font-size:12px;">Export/Import your logs (localStorage).</div>
+          </div>
+          <div style="display:flex; gap:10px; flex-wrap:wrap; justify-content:flex-end;">
+            <button class="btn" id="btnExport">Export</button>
+            <button class="btn" id="btnImport">Import</button>
+            <button class="btn danger" id="btnResetDay">Reset current day</button>
+            <button class="btn danger" id="btnWipeAll">Wipe all data</button>
+          </div>
+        </div>
+
+        <div style="margin-top:10px;">
+          <label for="ioBox">Export / Import JSON</label>
+          <textarea id="ioBox" placeholder="Export appears here. Paste JSON here to import."></textarea>
+          <div class="hint">
+            Keyboard: <span class="kbd">←</span>/<span class="kbd">→</span> to change slides, <span class="kbd">T</span> today, <span class="kbd">Y</span> yesterday, <span class="kbd">P</span> profile.
+          </div>
+        </div>
+      </div>
+
+      <div class="modalFooter">
+        <button class="btn" id="btnCancelModal">Cancel</button>
+        <button class="btn primary" id="btnSaveProfile">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    // 🔨🤖🔧 StudyOS-like daily logger (single-file, localStorage)
+    (function(){
+      const STORAGE_KEY = "studyos_v1";
+      const DEFAULT_PROFILE = {
+        studentName: "",
+        target: "Backend / System Design",
+        timeline: "3–6 Months",
+        level: "Intermediate",
+        deepDive: "No"
+      };
+
+      const $ = (id)=>document.getElementById(id);
+
+      const els = {
+        metaBar: $("metaBar"),
+        dateLabel: $("dateLabel"),
+        datePretty: $("datePretty"),
+        autosaveLabel: $("autosaveLabel"),
+
+        btnPrevDay: $("btnPrevDay"),
+        btnNextDay: $("btnNextDay"),
+        btnToday: $("btnToday"),
+        btnYday: $("btnYday"),
+
+        btnSettings: $("btnSettings"),
+
+        // swiper
+        swiper: $("swiper"),
+        track: $("track"),
+        btnBack: $("btnBack"),
+        btnNext: $("btnNext"),
+        dots: $("dots"),
+        stepText: $("stepText"),
+
+        // inputs (daily)
+        focus: $("focus"),
+        distractions: $("distractions"),
+        hours: $("hours"),
+        completed: $("completed"),
+        keyLearning: $("keyLearning"),
+        workout: $("workout"),
+        sleep: $("sleep"),
+        tomorrow: $("tomorrow"),
+        blockers: $("blockers"),
+
+        reportText: $("reportText"),
+        btnCopy: $("btnCopy"),
+        btnShare: $("btnShare"),
+
+        // segmented
+        energySeg: $("energySeg"),
+        moodSeg: $("moodSeg"),
+
+        // pills
+        pillProfile: $("pillProfile"),
+        pillName: $("pillName"),
+        pillTargetText: $("pillTargetText"),
+        pillTimelineText: $("pillTimelineText"),
+        pillLevelText: $("pillLevelText"),
+        pillDeepDiveText: $("pillDeepDiveText"),
+
+        // modal
+        modalBackdrop: $("modalBackdrop"),
+        btnCloseModal: $("btnCloseModal"),
+        btnCancelModal: $("btnCancelModal"),
+        btnSaveProfile: $("btnSaveProfile"),
+
+        profileName: $("profileName"),
+        profileTarget: $("profileTarget"),
+        profileTimeline: $("profileTimeline"),
+        profileLevel: $("profileLevel"),
+        deepDiveSeg: $("deepDiveSeg"),
+
+        btnExport: $("btnExport"),
+        btnImport: $("btnImport"),
+        btnResetDay: $("btnResetDay"),
+        btnWipeAll: $("btnWipeAll"),
+        ioBox: $("ioBox"),
+
+        toast: $("toast")
+      };
+
+      const state = {
+        profile: {...DEFAULT_PROFILE},
+        days: {}, // { "YYYY-MM-DD": dayData }
+        currentDate: toISODate(new Date()),
+        slideIndex: 0,
+        slideCount: 4
+      };
+
+      function toISODate(d){
+        const y = d.getFullYear();
+        const m = String(d.getMonth()+1).padStart(2,"0");
+        const da = String(d.getDate()).padStart(2,"0");
+        return `${y}-${m}-${da}`;
+      }
+
+      function fromISODate(s){
+        const [y,m,d] = s.split("-").map(Number);
+        return new Date(y, m-1, d);
+      }
+
+      function addDays(iso, delta){
+        const d = fromISODate(iso);
+        d.setDate(d.getDate()+delta);
+        return toISODate(d);
+      }
+
+      function formatPretty(iso){
+        const d = fromISODate(iso);
+        return d.toLocaleDateString(undefined, { weekday:"short", year:"numeric", month:"short", day:"numeric" });
+      }
+
+      function isToday(iso){
+        return iso === toISODate(new Date());
+      }
+
+      function isYesterday(iso){
+        return iso === addDays(toISODate(new Date()), -1);
+      }
+
+      function emptyDay(){
+        return {
+          focus: "",
+          energy: "",
+          distractions: "",
+          hours: "",
+          completed: "",
+          keyLearning: "",
+          workout: "",
+          sleep: "",
+          mood: "",
+          tomorrow: "",
+          blockers: ""
+        };
+      }
+
+      function load(){
+        try{
+          const raw = localStorage.getItem(STORAGE_KEY);
+          if(!raw) return;
+          const data = JSON.parse(raw);
+          if(data && typeof data === "object"){
+            state.profile = {...DEFAULT_PROFILE, ...(data.profile||{})};
+            state.days = data.days && typeof data.days === "object" ? data.days : {};
+          }
+        }catch(e){
+          console.warn("Failed to load", e);
+        }
+      }
+
+      function save(){
+        const payload = { profile: state.profile, days: state.days };
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
+      }
+
+      function getDay(iso){
+        if(!state.days[iso]) state.days[iso] = emptyDay();
+        return state.days[iso];
+      }
+
+      function setChipGroup(container, value){
+        [...container.querySelectorAll(".chip")].forEach(ch=>{
+          ch.classList.toggle("active", ch.dataset.value === value);
+        });
+      }
+
+      function bindChipGroup(container, key){
+        container.addEventListener("click", (e)=>{
+          const chip = e.target.closest(".chip");
+          if(!chip) return;
+          const val = chip.dataset.value || "";
+          const day = getDay(state.currentDate);
+          day[key] = (day[key] === val) ? "" : val; // toggle off if same
+          setChipGroup(container, day[key]);
+          persistAndRender();
+        });
+      }
+
+      function readInputsToState(){
+        const day = getDay(state.currentDate);
+        day.focus = els.focus.value.trim();
+        day.distractions = els.distractions.value.trim();
+        day.hours = els.hours.value;
+        day.completed = els.completed.value.trim();
+        day.keyLearning = els.keyLearning.value.trim();
+        day.workout = els.workout.value.trim();
+        day.sleep = els.sleep.value;
+        day.tomorrow = els.tomorrow.value.trim();
+        day.blockers = els.blockers.value.trim();
+      }
+
+      function writeStateToInputs(){
+        const day = getDay(state.currentDate);
+        els.focus.value = day.focus || "";
+        els.distractions.value = day.distractions || "";
+        els.hours.value = day.hours || "";
+        els.completed.value = day.completed || "";
+        els.keyLearning.value = day.keyLearning || "";
+        els.workout.value = day.workout || "";
+        els.sleep.value = day.sleep || "";
+        els.tomorrow.value = day.tomorrow || "";
+        els.blockers.value = day.blockers || "";
+
+        setChipGroup(els.energySeg, day.energy || "");
+        setChipGroup(els.moodSeg, day.mood || "");
+
+        // Deep dive chips in modal are profile-based
+        setChipGroup(els.deepDiveSeg, state.profile.deepDive || "No");
+      }
+
+      function makeMetaChips(){
+        const day = getDay(state.currentDate);
+
+        // tiny summary chips
+        const items = [];
+        const push = (label, val, tone="")=>{
+          if(!val) return;
+          items.push({label, val, tone});
+        };
+
+        push("Focus", day.focus, "primary");
+        push("Energy", day.energy, day.energy==="High"?"good":(day.energy==="Med"?"warn":(day.energy==="Low"?"danger":"")));
+        push("Hours", day.hours, "primary");
+        push("Mood", day.mood, day.mood==="Good"?"good":(day.mood==="OK"?"warn":(day.mood==="Low"?"danger":"")));
+        push("Sleep", day.sleep ? `${day.sleep}h` : "", "primary");
+
+        els.metaBar.innerHTML = "";
+        if(items.length === 0){
+          const span = document.createElement("div");
+          span.className = "tag";
+          span.innerHTML = `<b>Tip:</b> log 30 seconds now → builds momentum.`;
+          els.metaBar.appendChild(span);
+          return;
+        }
+        items.slice(0,6).forEach(it=>{
+          const el = document.createElement("div");
+          el.className = "tag";
+          el.innerHTML = `<b>${escapeHtml(it.label)}:</b> ${escapeHtml(String(it.val))}`;
+          els.metaBar.appendChild(el);
+        });
+      }
+
+      function escapeHtml(s){
+        return s.replace(/[&<>"']/g, (c)=>({
+          "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"
+        }[c]));
+      }
+
+      function buildReport(){
+        const p = state.profile;
+        const day = getDay(state.currentDate);
+
+        const name = (p.studentName && p.studentName.trim()) ? p.studentName.trim() : "Student";
+        const target = p.target || DEFAULT_PROFILE.target;
+        const timeline = p.timeline || DEFAULT_PROFILE.timeline;
+        const level = p.level || DEFAULT_PROFILE.level;
+        const deep = p.deepDive || "No";
+
+        const dateLine = `${formatPretty(state.currentDate)}${isToday(state.currentDate) ? " (Today)" : isYesterday(state.currentDate) ? " (Yesterday)" : ""}`;
+
+        const bullets = normalizeBullets(day.completed);
+
+        const parts = [];
+        parts.push(`📌 ${name} — Daily Study Log`);
+        parts.push(`🗓️ ${dateLine}`);
+        parts.push(`🎯 Target: ${target} | Timeline: ${timeline} | Level: ${level} | Deep Dive: ${deep}`);
+        parts.push("");
+
+        parts.push(`✅ Focus: ${day.focus || "—"}`);
+        parts.push(`⚡ Energy: ${day.energy || "—"} | ⏱️ Hours: ${day.hours || "—"}`);
+        if(day.distractions) parts.push(`🧠 Distractions: ${day.distractions}`);
+
+        parts.push("");
+        parts.push("🧩 Completed:");
+        parts.push(bullets.length ? bullets.map(b=>`- ${b}`).join("\n") : "- —");
+
+        parts.push("");
+        parts.push(`🧠 Key learning: ${day.keyLearning || "—"}`);
+
+        parts.push("");
+        parts.push(`💪 Workout/Steps: ${day.workout || "—"}`);
+        parts.push(`😴 Sleep: ${day.sleep ? `${day.sleep}h` : "—"} | 🙂 Mood: ${day.mood || "—"}`);
+
+        parts.push("");
+        parts.push(`➡️ Tomorrow: ${day.tomorrow || "—"}`);
+        parts.push(`🚧 Blockers: ${day.blockers || "—"}`);
+
+        if(deep === "Yes"){
+          parts.push("");
+          parts.push("🔎 Deep Dive Prompts:");
+          parts.push(`- 1 tradeoff I considered today: ${day.keyLearning ? "(see key learning)" : "—"}`);
+          parts.push("- 1 thing to revisit tomorrow (test/benchmark/edge-case): —");
+          parts.push("- 1 system design note (latency, throughput, caching, consistency): —");
+        }
+
+        return parts.join("\n");
+      }
+
+      function normalizeBullets(text){
+        if(!text) return [];
+        const lines = text.split("\n").map(l=>l.trim()).filter(Boolean);
+        return lines.map(l=>{
+          if(l.startsWith("-")) return l.replace(/^-+\s*/, "");
+          if(l.startsWith("•")) return l.replace(/^•+\s*/, "");
+          return l;
+        });
+      }
+
+      function renderDateHeader(){
+        const iso = state.currentDate;
+        els.dateLabel.textContent = isToday(iso) ? "Today" : isYesterday(iso) ? "Yesterday" : "Day";
+        els.datePretty.textContent = formatPretty(iso);
+      }
+
+      function renderProfilePills(){
+        const p = state.profile;
+        els.pillName.textContent = (p.studentName && p.studentName.trim()) ? p.studentName.trim() : "Student";
+        els.pillTargetText.textContent = p.target || DEFAULT_PROFILE.target;
+        els.pillTimelineText.textContent = p.timeline || DEFAULT_PROFILE.timeline;
+        els.pillLevelText.textContent = p.level || DEFAULT_PROFILE.level;
+        els.pillDeepDiveText.textContent = `Deep Dive: ${p.deepDive || "No"}`;
+      }
+
+      function renderReport(){
+        els.reportText.textContent = buildReport();
+      }
+
+      function persistAndRender(){
+        readInputsToState();
+        save();
+        renderProfilePills();
+        renderDateHeader();
+        makeMetaChips();
+        renderReport();
+        pulseAutosave();
+      }
+
+      let autosaveTimer = null;
+      function pulseAutosave(){
+        els.autosaveLabel.textContent = "Autosave: saved ✔️";
+        clearTimeout(autosaveTimer);
+        autosaveTimer = setTimeout(()=>{
+          els.autosaveLabel.textContent = "Autosave: on";
+        }, 900);
+      }
+
+      // Swiper logic (touch + buttons)
+      function setSlide(i, opts={animate:true}){
+        state.slideIndex = Math.max(0, Math.min(state.slideCount-1, i));
+        const x = -state.slideIndex * els.swiper.clientWidth;
+        els.track.style.transition = opts.animate ? "transform .22s ease" : "none";
+        els.track.style.transform = `translateX(${x}px)`;
+        renderDots();
+      }
+
+      function renderDots(){
+        els.dots.innerHTML = "";
+        for(let i=0;i<state.slideCount;i++){
+          const d = document.createElement("div");
+          d.className = "dot2" + (i===state.slideIndex ? " active" : "");
+          d.title = `Go to step ${i+1}`;
+          d.addEventListener("click", ()=>setSlide(i));
+          els.dots.appendChild(d);
+        }
+        const a = String(state.slideIndex+1).padStart(2,"0");
+        const b = String(state.slideCount).padStart(2,"0");
+        els.stepText.textContent = `${a}/${b}`;
+
+        // Button labels
+        els.btnBack.classList.toggle("ghost", state.slideIndex === 0);
+        els.btnNext.textContent = (state.slideIndex === state.slideCount-1) ? "Done ✔️" : "Next →";
+      }
+
+      function initSwipe(){
+        let startX = 0;
+        let startY = 0;
+        let isDown = false;
+        let baseX = 0;
+        let moved = false;
+
+        const onDown = (clientX, clientY)=>{
+          isDown = true;
+          moved = false;
+          startX = clientX;
+          startY = clientY;
+          const current = -state.slideIndex * els.swiper.clientWidth;
+          baseX = current;
+          els.track.style.transition = "none";
+        };
+
+        const onMove = (clientX, clientY)=>{
+          if(!isDown) return;
+          const dx = clientX - startX;
+          const dy = clientY - startY;
+          if(Math.abs(dy) > Math.abs(dx) && Math.abs(dy) > 8) return; // allow vertical scroll
+          if(Math.abs(dx) > 6) moved = true;
+
+          const x = baseX + dx;
+          els.track.style.transform = `translateX(${x}px)`;
+        };
+
+        const onUp = (clientX)=>{
+          if(!isDown) return;
+          isDown = false;
+          const dx = clientX - startX;
+          const w = els.swiper.clientWidth;
+
+          // snap
+          const threshold = Math.min(110, w * 0.18);
+          if(moved && dx < -threshold) setSlide(state.slideIndex + 1);
+          else if(moved && dx > threshold) setSlide(state.slideIndex - 1);
+          else setSlide(state.slideIndex);
+
+          els.track.style.transition = "transform .22s ease";
+        };
+
+        // Pointer events (best)
+        els.swiper.addEventListener("pointerdown", (e)=>{
+          if(e.pointerType === "mouse" && e.button !== 0) return;
+          els.swiper.setPointerCapture?.(e.pointerId);
+          onDown(e.clientX, e.clientY);
+        });
+        els.swiper.addEventListener("pointermove", (e)=>onMove(e.clientX, e.clientY));
+        els.swiper.addEventListener("pointerup", (e)=>onUp(e.clientX));
+        els.swiper.addEventListener("pointercancel", (e)=>onUp(e.clientX));
+
+        // resize
+        window.addEventListener("resize", ()=>setSlide(state.slideIndex, {animate:false}));
+      }
+
+      // Modal
+      function openModal(){
+        // load current profile into fields
+        els.profileName.value = state.profile.studentName || "";
+        els.profileTarget.value = state.profile.target || DEFAULT_PROFILE.target;
+        els.profileTimeline.value = state.profile.timeline || DEFAULT_PROFILE.timeline;
+        els.profileLevel.value = state.profile.level || DEFAULT_PROFILE.level;
+        setChipGroup(els.deepDiveSeg, state.profile.deepDive || "No");
+
+        els.modalBackdrop.classList.add("open");
+        els.modalBackdrop.setAttribute("aria-hidden", "false");
+        setTimeout(()=>els.profileName.focus(), 0);
+      }
+      function closeModal(){
+        els.modalBackdrop.classList.remove("open");
+        els.modalBackdrop.setAttribute("aria-hidden", "true");
+      }
+
+      function toast(msg){
+        els.toast.textContent = msg;
+        els.toast.classList.add("show");
+        clearTimeout(toast._t);
+        toast._t = setTimeout(()=>els.toast.classList.remove("show"), 1400);
+      }
+
+      // Export / Import
+      function exportData(){
+        const payload = { profile: state.profile, days: state.days };
+        els.ioBox.value = JSON.stringify(payload, null, 2);
+        toast("Exported JSON ✔️");
+      }
+
+      function importData(){
+        const txt = els.ioBox.value.trim();
+        if(!txt) return toast("Paste JSON first");
+        try{
+          const obj = JSON.parse(txt);
+          if(!obj || typeof obj !== "object") throw new Error("Invalid JSON");
+          state.profile = {...DEFAULT_PROFILE, ...(obj.profile||{})};
+          state.days = obj.days && typeof obj.days === "object" ? obj.days : {};
+          save();
+          renderProfilePills();
+          writeStateToInputs();
+          persistAndRender();
+          toast("Imported ✔️");
+        }catch(e){
+          toast("Import failed ❗");
+        }
+      }
+
+      function resetCurrentDay(){
+        if(!confirm(`Reset log for ${formatPretty(state.currentDate)}?`)) return;
+        delete state.days[state.currentDate];
+        save();
+        writeStateToInputs();
+        persistAndRender();
+        toast("Day reset ✔️");
+      }
+
+      function wipeAll(){
+        if(!confirm("Wipe ALL data (profile + all logs)?")) return;
+        localStorage.removeItem(STORAGE_KEY);
+        state.profile = {...DEFAULT_PROFILE};
+        state.days = {};
+        state.currentDate = toISODate(new Date());
+        save();
+        renderProfilePills();
+        writeStateToInputs();
+        renderDateHeader();
+        makeMetaChips();
+        renderReport();
+        toast("All data wiped ❗");
+      }
+
+      // Copy / Share
+      async function copyReport(){
+        const text = buildReport();
+        try{
+          await navigator.clipboard.writeText(text);
+          toast("Copied ✔️");
+        }catch(e){
+          // fallback
+          const ta = document.createElement("textarea");
+          ta.value = text;
+          document.body.appendChild(ta);
+          ta.select();
+          document.execCommand("copy");
+          ta.remove();
+          toast("Copied ✔️");
+        }
+      }
+
+      async function shareReport(){
+        const text = buildReport();
+        if(navigator.share){
+          try{
+            await navigator.share({
+              title: "StudyOS Daily Report",
+              text
+            });
+            toast("Shared ✔️");
+            return;
+          }catch(e){
+            // user cancelled or failed
+          }
+        }
+        await copyReport();
+        toast("Share not supported — copied instead ✔️");
+      }
+
+      // Navigation between days
+      function setDate(iso){
+        state.currentDate = iso;
+        renderDateHeader();
+        writeStateToInputs();
+        persistAndRender();
+      }
+
+      // Bind inputs autosave
+      function bindAutosave(el){
+        const handler = ()=>{
+          persistAndRender();
+        };
+        el.addEventListener("input", handler);
+        el.addEventListener("change", handler);
+      }
+
+      function init(){
+        load();
+
+        // Ensure defaults for your requested assumptions
+        state.profile = {...DEFAULT_PROFILE, ...state.profile};
+        if(state.profile.deepDive !== "Yes") state.profile.deepDive = "No"; // default assumed
+        if(!state.profile.target) state.profile.target = DEFAULT_PROFILE.target;
+        if(!state.profile.timeline) state.profile.timeline = DEFAULT_PROFILE.timeline;
+        if(!state.profile.level) state.profile.level = DEFAULT_PROFILE.level;
+
+        renderProfilePills();
+        renderDateHeader();
+
+        // chips
+        bindChipGroup(els.energySeg, "energy");
+        bindChipGroup(els.moodSeg, "mood");
+
+        // deep dive chips (profile)
+        els.deepDiveSeg.addEventListener("click", (e)=>{
+          const chip = e.target.closest(".chip");
+          if(!chip) return;
+          const val = chip.dataset.value || "No";
+          state.profile.deepDive = val;
+          setChipGroup(els.deepDiveSeg, val);
+        });
+
+        // inputs
+        [
+          els.focus, els.distractions, els.hours, els.completed, els.keyLearning,
+          els.workout, els.sleep, els.tomorrow, els.blockers
+        ].forEach(bindAutosave);
+
+        // day nav
+        els.btnPrevDay.addEventListener("click", ()=>setDate(addDays(state.currentDate, -1)));
+        els.btnNextDay.addEventListener("click", ()=>setDate(addDays(state.currentDate, +1)));
+        els.btnToday.addEventListener("click", ()=>setDate(toISODate(new Date())));
+        els.btnYday.addEventListener("click", ()=>setDate(addDays(toISODate(new Date()), -1)));
+
+        // pills -> open profile
+        els.pillProfile.addEventListener("click", openModal);
+
+        // swiper nav
+        els.btnBack.addEventListener("click", ()=>setSlide(state.slideIndex - 1));
+        els.btnNext.addEventListener("click", ()=>{
+          if(state.slideIndex === state.slideCount-1){
+            toast("Logged ✔️");
+            return;
+          }
+          setSlide(state.slideIndex + 1);
+        });
+
+        // settings modal
+        els.btnSettings.addEventListener("click", openModal);
+        els.btnCloseModal.addEventListener("click", closeModal);
+        els.btnCancelModal.addEventListener("click", closeModal);
+        els.modalBackdrop.addEventListener("click", (e)=>{
+          if(e.target === els.modalBackdrop) closeModal();
+        });
+
+        els.btnSaveProfile.addEventListener("click", ()=>{
+          state.profile.studentName = els.profileName.value.trim();
+          state.profile.target = els.profileTarget.value.trim() || DEFAULT_PROFILE.target;
+          state.profile.timeline = els.profileTimeline.value.trim() || DEFAULT_PROFILE.timeline;
+          state.profile.level = els.profileLevel.value;
+          // deepDive already set by chips; ensure value
+          state.profile.deepDive = (state.profile.deepDive === "Yes") ? "Yes" : "No";
+
+          save();
+          renderProfilePills();
+          renderReport();
+          closeModal();
+          toast("Profile saved ✔️");
+        });
+
+        els.btnExport.addEventListener("click", exportData);
+        els.btnImport.addEventListener("click", importData);
+        els.btnResetDay.addEventListener("click", resetCurrentDay);
+        els.btnWipeAll.addEventListener("click", wipeAll);
+
+        // copy/share
+        els.btnCopy.addEventListener("click", copyReport);
+        els.btnShare.addEventListener("click", shareReport);
+
+        // init swiper
+        initSwipe();
+        setSlide(0, {animate:false});
+        writeStateToInputs();
+        makeMetaChips();
+        renderReport();
+
+        // keyboard shortcuts
+        window.addEventListener("keydown", (e)=>{
+          if(els.modalBackdrop.classList.contains("open")){
+            if(e.key === "Escape") closeModal();
+            return;
+          }
+          if(e.key === "ArrowRight") setSlide(state.slideIndex + 1);
+          if(e.key === "ArrowLeft") setSlide(state.slideIndex - 1);
+          if(e.key.toLowerCase() === "t") setDate(toISODate(new Date()));
+          if(e.key.toLowerCase() === "y") setDate(addDays(toISODate(new Date()), -1));
+          if(e.key.toLowerCase() === "p") openModal();
+        });
+      }
+
+      init();
+    })();
+  </script>
+</body>
+</html>
+```0
